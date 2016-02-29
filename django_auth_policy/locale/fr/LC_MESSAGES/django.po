@@ -89,7 +89,7 @@ msgstr ""
 
 #: forms.py:28
 msgid "This account is inactive."
-msgstr ""
+msgstr "Ce compte est inactif."
 
 #: forms.py:93 forms.py:145
 msgid "The two password fields didn't match."
@@ -192,7 +192,7 @@ msgstr "changements utilisateur"
 #: password_change.py:25
 #, python-brace-format
 msgid "One is required to change passwords every {age} days."
-msgstr ""
+msgstr "Il est nécessaire de changer de mot de passe tous les {age} jours."
 
 #: password_change.py:26
 msgid "Your password has expired and must be changed."
@@ -222,7 +222,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Passwords must have at least one lowecase character."
 msgid "Passwords must have at least one lowercase character."
-msgstr "Les mots de passe doivent contenir au moins un caractère en miniscule."
+msgstr "Les mots de passe doivent contenir au moins un caractère en minuscule."
 
 #: password_strength.py:101
 #, python-brace-format
