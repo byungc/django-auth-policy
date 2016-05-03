@@ -130,39 +130,45 @@ class AuthenticationLockedUsername(AuthenticationPolicy):
     text = _(u'Too many failed login attempts. Your account has been locked '
              'for {duration}.')
 
-    def pre_auth_check(self, loginattempt, password):
+    assert period is None or period > lockout_duration, \
+            Exception('Period must be longer than the lockout duration.')
+
+    def is_locked(self, username, exclude_id=None):
         try:
-            prev_login = LoginAttempt.objects.filter(
-                username=loginattempt.username).exclude(
-                pk=loginattempt.pk).order_by('-id')[0]
+            prev_login = LoginAttempt.objects.filter(username__iexact=username).\
+                    exclude(pk=exclude_id).order_by('-id')[0]
         except IndexError:
             # No login attempts for this username and thus no lockout
-            return
+            return False
 
         # If previous login did not count towards a lockout one is certainly
         # not locked out
         if not prev_login.lockout:
-            return
+            return False
+
+        now = timezone.now()
 
         # If previous login was before lockout duration one is not
         # locked out (anymore)
-        lock_from = (timezone.now() -
-                     datetime.timedelta(seconds=self.lockout_duration))
+        lock_from = now - datetime.timedelta(seconds=self.lockout_duration)
         if prev_login.timestamp < lock_from:
-            return
+            return False
 
         # Count number of locking login attempts
-        user_lockout = LoginAttempt.objects.filter(
-            username=loginattempt.username, successful=False,
-            lockout=True).exclude(pk=loginattempt.pk)
+        user_lockout = LoginAttempt.objects.filter(username__iexact=username,
+                successful=False, lockout=True).exclude(pk=exclude_id)
 
         if self.period is not None:
-            lockout_count_from = timezone.now() - datetime.timedelta(
-                seconds=self.period)
-            user_lockout = user_lockout.filter(
-                timestamp__gt=lockout_count_from)
+            lockout_count_from = now - datetime.timedelta(seconds=self.period)
+            user_lockout = user_lockout.filter(timestamp__gt=lockout_count_from)
 
-        if user_lockout.count() >= self.max_failed:
+        return user_lockout.count() >= self.max_failed
+
+    def pre_auth_check(self, loginattempt, password):
+        locked = self.is_locked(loginattempt.username,
+                exclude_id=loginattempt.pk)
+
+        if locked:
             logger.info(u'Authentication failure, username=%s, address=%s, '
                         'username locked', loginattempt.username,
                         loginattempt.source_address)
@@ -171,7 +177,7 @@ class AuthenticationLockedUsername(AuthenticationPolicy):
 
     def auth_success(self, loginattempt):
         # Reset lockout counts for username
-        LoginAttempt.objects.filter(username=loginattempt.username,
+        LoginAttempt.objects.filter(username__iexact=loginattempt.username,
                                     lockout=True).update(lockout=False)
 
     @property
@@ -194,11 +200,14 @@ class AuthenticationLockedRemoteAddress(AuthenticationPolicy):
     text = _(u'Too many failed login attempts. Your account has been locked '
              'for {duration}.')
 
-    def pre_auth_check(self, loginattempt, password):
+    assert period is None or period > lockout_duration, \
+            Exception('Period must be longer than the lockout duration.')
+
+    def is_locked(self, source_address, exclude_id=None):
         try:
             prev_login = LoginAttempt.objects.filter(
-                source_address=loginattempt.source_address).exclude(
-                pk=loginattempt.pk).order_by('-id')[0]
+                    source_address=source_address).\
+                        exclude(pk=exclude_id).order_by('-id')[0]
         except IndexError:
             # No login attempts for this username and thus no lockout
             return
@@ -208,25 +217,29 @@ class AuthenticationLockedRemoteAddress(AuthenticationPolicy):
         if not prev_login.lockout:
             return
 
+        now = timezone.now()
+
         # If previous login was before lockout duration one is not
         # locked out (anymore)
-        lock_from = (timezone.now() -
-                     datetime.timedelta(seconds=self.lockout_duration))
+        lock_from = now - datetime.timedelta(seconds=self.lockout_duration)
         if prev_login.timestamp < lock_from:
             return
 
         # Count number of locking login attempts
-        user_lockout = LoginAttempt.objects.filter(
-            source_address=loginattempt.source_address, successful=False,
-            lockout=True).exclude(pk=loginattempt.pk)
+        user_lockout = LoginAttempt.objects.\
+                filter(source_address=source_address, lockout=True).\
+                exclude(pk=exclude_id)
 
         if self.period is not None:
-            lockout_count_from = timezone.now() - datetime.timedelta(
-                seconds=self.period)
-            user_lockout = user_lockout.filter(
-                timestamp__gt=lockout_count_from)
+            lockout_count_from = now - datetime.timedelta(seconds=self.period)
+            user_lockout = user_lockout.filter(timestamp__gt=lockout_count_from)
 
-        if user_lockout.count() >= self.max_failed:
+        return user_lockout.count() >= self.max_failed
+
+    def pre_auth_check(self, loginattempt, password):
+        locked = self.is_locked(loginattempt.source_address,
+                exclude_id=loginattempt.pk)
+        if locked:
             logger.info(u'Authentication failure, username=%s, address=%s, '
                         'address locked',
                         loginattempt.username,

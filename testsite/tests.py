@@ -35,6 +35,7 @@ from django_auth_policy.password_strength import (PasswordMinLength,
                                                   PasswordDisallowedTerms,
                                                   PasswordLimitReuse)
 from django_auth_policy.middleware import LoginRequiredMiddleware
+from django_auth_policy.handlers import authentication_policy_handler
 from testsite.views import login_not_required_view
 
 
@@ -53,6 +54,10 @@ class LoginTests(TestCase):
         self.old_stream = self.logger.handlers[0].stream
         self.logger.handlers[0].stream = StringIO()
 
+        handler = authentication_policy_handler
+        self.lockout_policy = handler.get_policy(
+                'django_auth_policy.authentication.AuthenticationLockedUsername')
+
     def tearDown(self):
         self.logger.handlers[0].stream = self.old_stream
 
@@ -60,6 +65,8 @@ class LoginTests(TestCase):
         """ Test view with form and successful login """
         resp = self.client.get(reverse('login'))
         self.assertEqual(resp.status_code, 200)
+
+        self.assertFalse(self.lockout_policy.is_locked('rf'))
 
         resp = self.client.post(reverse('login'), data={
             'username': 'rf', 'password': 'password'})
@@ -83,6 +90,8 @@ class LoginTests(TestCase):
         text = unicode(pol.validation_msg)
         for x in xrange(0, pol.max_failed):
 
+            self.assertFalse(self.lockout_policy.is_locked('rf'))
+
             req = self.factory.get(reverse('login'))
             req.META['REMOTE_ADDR'] = '10.0.0.%d' % (x + 1)
 
@@ -99,6 +108,8 @@ class LoginTests(TestCase):
 
         self.assertEqual(attempts.count(),
                          pol.max_failed)
+
+        self.assertTrue(self.lockout_policy.is_locked('rf'))
 
         # Another failed authentication triggers lockout
         req = self.factory.get(reverse('login'))
