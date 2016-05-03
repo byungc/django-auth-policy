@@ -1,5 +1,6 @@
 import logging
 import warnings
+import collections
 
 from django.conf import settings
 from django.utils.module_loading import import_string
@@ -15,7 +16,7 @@ class PasswordStrengthPolicyHandler(object):
     """ Runs all policies related to password strength requirements
     Raises a ValidationError when a password doesn't comply
     """
-    _policies = []
+    _policies = collections.OrderedDict()
     policy_texts = []
 
     def __init__(self):
@@ -26,7 +27,7 @@ class PasswordStrengthPolicyHandler(object):
             policy_class = import_string(policy_path)
             policy = policy_class(**kwargs)
 
-            self._policies.append(policy)
+            self._policies[policy_path] = policy
 
             if policy.show_policy and policy.policy_text:
                 self.policy_texts.append({
@@ -34,21 +35,27 @@ class PasswordStrengthPolicyHandler(object):
                     'caption': policy.policy_caption,
                 })
 
+    def get_policy(self, policy_path):
+        return self._policies[policy_path]
+
     def validate(self, password, user=None):
         """ Validate password strength against all password policies.
         One should also provide the user (when available) that (will) use
         this password.
         Policies will raise a ValidationError when the password doesn't comply
         """
-        for pol in self._policies:
+        for pol in self._policies.values():
             pol.validate(password, user)
+
+
+password_strength_policy_handler = PasswordStrengthPolicyHandler()
 
 
 class PasswordChangePolicyHandler(object):
     """ Runs all policies related to enforced password changes
     Raises a ValidationError when a user is enforced to change its password
     """
-    _policies = []
+    _policies = collections.OrderedDict()
     policy_texts = []
 
     def __init__(self):
@@ -59,7 +66,10 @@ class PasswordChangePolicyHandler(object):
             policy_class = import_string(policy_path)
             policy = policy_class(**kwargs)
 
-            self._policies.append(policy)
+            self._policies[policy_path] = policy
+
+    def get_policy(self, policy_path):
+        return self._policies[policy_path]
 
     def validate(self, user):
         try:
@@ -68,7 +78,7 @@ class PasswordChangePolicyHandler(object):
         except IndexError:
             last_pw_change = None
 
-        for pol in self._policies:
+        for pol in self._policies.values():
             pol.validate(last_pw_change)
 
     def update_session(self, request, user):
@@ -91,11 +101,14 @@ class PasswordChangePolicyHandler(object):
             request.session['password_change_enforce_msg'] = None
 
 
+password_change_policy_handler = PasswordChangePolicyHandler()
+
+
 class AuthenticationPolicyHandler(object):
     """ Runs all policies related to authentication
     Raises a ValidationError when an authentication attempt does not comply
     """
-    _policies = []
+    _policies = collections.OrderedDict()
     policy_texts = []
 
     def __init__(self):
@@ -106,7 +119,10 @@ class AuthenticationPolicyHandler(object):
             policy_class = import_string(policy_path)
             policy = policy_class(**kwargs)
 
-            self._policies.append(policy)
+            self._policies[policy_path] = policy
+
+    def get_policy(self, policy_path):
+        return self._policies[policy_path]
 
     def pre_auth_checks(self, username, password, remote_addr, host):
         """ Policy checks before a user is authenticated
@@ -130,7 +146,7 @@ class AuthenticationPolicyHandler(object):
                 successful=False,
                 lockout=True)
 
-        for pol in self._policies:
+        for pol in self._policies.values():
             pol.pre_auth_check(attempt, password)
 
         return attempt
@@ -143,7 +159,7 @@ class AuthenticationPolicyHandler(object):
         """
         assert attempt.user is not None
 
-        for pol in self._policies:
+        for pol in self._policies.values():
             pol.post_auth_check(attempt)
 
         return attempt
@@ -160,7 +176,10 @@ class AuthenticationPolicyHandler(object):
             attempt.lockout = False
             attempt.save()
 
-        for pol in self._policies:
+        for pol in self._policies.values():
             pol.auth_success(attempt)
 
         return attempt
+
+
+authentication_policy_handler = AuthenticationPolicyHandler()
