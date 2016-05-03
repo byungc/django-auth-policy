@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-auth-policy',
-    version='0.9.13.dev0',
+    version='0.9.13',
     zip_safe=False,
     description='Enforces a couple of common authentication policies for the '
                 'Django web framework.',
@@ -17,7 +17,7 @@ setup(
     license='BSD',
     packages=find_packages(exclude=["testsite", "testsite.*", "*.tests", "*.tests.*", "tests.*", "tests"]),
     include_package_data=True,
-    install_requires=['Django>=1.7'],
+    install_requires=['Django>=1.8'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
