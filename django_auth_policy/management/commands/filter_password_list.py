@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.core.exceptions import ValidationError
 
-from django_auth_policy.handlers import PasswordStrengthPolicyHandler
+from django_auth_policy.handlers import password_strength_policy_handler
 
 
 class Command(BaseCommand):
@@ -15,8 +15,6 @@ class Command(BaseCommand):
                    "password lists.")
             return
 
-        pw_handler = PasswordStrengthPolicyHandler()
-
         for arg in args:
             fh = open(arg, 'r')
             for pw in fh:
@@ -28,7 +26,7 @@ class Command(BaseCommand):
                 pw = pw.strip()
 
                 try:
-                    pw_handler.validate(pw)
+                    password_strength_policy_handler.validate(pw)
                 except ValidationError:
                     continue
 

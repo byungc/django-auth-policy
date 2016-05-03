@@ -5,7 +5,7 @@ from django.views.decorators.csrf import requires_csrf_token
 from django.conf import settings
 from django import http
 
-from django_auth_policy.handlers import PasswordChangePolicyHandler
+from django_auth_policy.handlers import password_change_policy_handler
 from django_auth_policy.forms import StrictPasswordChangeForm
 from django_auth_policy.password_change import update_password, password_changed
 from django_auth_policy.settings import (
@@ -34,7 +34,7 @@ class AuthenticationPolicyMiddleware(object):
     login_path = reverse(LOGIN_VIEW_NAME)
     logout_path = reverse(LOGOUT_VIEW_NAME)
 
-    password_change_policy_handler = PasswordChangePolicyHandler()
+    password_change_policy_handler = password_change_policy_handler
 
     def process_request(self, request):
         assert hasattr(request, 'user'), (

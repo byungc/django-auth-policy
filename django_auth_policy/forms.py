@@ -7,17 +7,16 @@ from django.utils.text import capfirst
 from django.contrib.auth import authenticate, get_user_model
 
 from django_auth_policy.models import PasswordChange
-from django_auth_policy.handlers import (PasswordStrengthPolicyHandler,
-                                         AuthenticationPolicyHandler,
-                                         PasswordChangePolicyHandler)
+from django_auth_policy.handlers import (password_strength_policy_handler,
+        authentication_policy_handler, password_change_policy_handler)
 
 
 logger = logging.getLogger(__name__)
 
 
 class StrictAuthenticationForm(forms.Form):
-    auth_policy = AuthenticationPolicyHandler()
-    password_change_policy = PasswordChangePolicyHandler()
+    auth_policy = authentication_policy_handler
+    password_change_policy = password_change_policy_handler
 
     username = forms.CharField(max_length=254)
     password = forms.CharField(label=_("Password"), widget=forms.PasswordInput)
@@ -38,7 +37,8 @@ class StrictAuthenticationForm(forms.Form):
         UserModel = get_user_model()
         self.username_field = UserModel._meta.get_field(UserModel.USERNAME_FIELD)
         if self.fields['username'].label is None:
-            self.fields['username'].label = capfirst(self.username_field.verbose_name)
+            self.fields['username'].label = \
+                    capfirst(self.username_field.verbose_name)
 
     def clean(self):
         remote_addr = (self.request.META.get('HTTP_X_REAL_IP') or
@@ -88,7 +88,7 @@ class StrictAuthenticationForm(forms.Form):
 
 
 class StrictSetPasswordForm(forms.Form):
-    password_strength_policy = PasswordStrengthPolicyHandler()
+    password_strength_policy = password_strength_policy_handler
     error_messages = {
         'password_mismatch': _("The two password fields didn't match."),
     }
