@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.text import capfirst
 from django.contrib.auth import authenticate, get_user_model
 
+from django_auth_policy.settings import REMOTE_ADDR_HEADER
 from django_auth_policy.models import PasswordChange
 from django_auth_policy.handlers import (password_strength_policy_handler,
         authentication_policy_handler, password_change_policy_handler)
@@ -41,8 +42,7 @@ class StrictAuthenticationForm(forms.Form):
                     capfirst(self.username_field.verbose_name)
 
     def clean(self):
-        remote_addr = (self.request.META.get('HTTP_X_REAL_IP') or
-                       self.request.META.get('REMOTE_ADDR'))
+        remote_addr = self.request.META.get(REMOTE_ADDR_HEADER)
         if not remote_addr:
             logger.warning('Could not reliably determine source address',
                            extra={'path': self.request.get_full_path()})

@@ -38,3 +38,8 @@ LOGOUT_AFTER_PASSWORD_CHANGE = getattr(settings,
 LOGIN_NOT_REQUIRED_MARKER = getattr(settings,
                                     'LOGIN_NOT_REQUIRED_MARKER',
                                     'django_auth_policy__login_not_required')
+
+# Set this to the Django request.META header name to be used to retrieve the
+# user's IP address of the request, such as 'HTTP_X_REAL_IP'.
+REMOTE_ADDR_HEADER = getattr(settings, 'AUTH_POLICY_REMOTE_ADDR_HEADER',
+        'REMOTE_ADDR')
