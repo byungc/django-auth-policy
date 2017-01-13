@@ -1,6 +1,13 @@
+**Warning**: This project will only be maintained for compatibility with Django
+1.8 and Python 2.7, all other development has stopped more or less:
 
-A future version of this package will get a new name and will become Django
-independent, with an optional Django integration module(s).
+    Django 1.9 incorporated password validation so this is now the preferred
+    solution for password complexity policies.
+
+    Dreamsolution mainly uses Django Auth Policy for rate limiting
+    authentication and to enforce password complexity. Rate limiting is easy to
+    implement without Django Auth Policy. Hint:
+    https://www.binpress.com/tutorial/introduction-to-rate-limiting-with-redis/155
 
 Django Auth Policy is a set of tools to enforce various authentication
 policies when using the Django Web Framework (http://www.djangoproject.com/).
