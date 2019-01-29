@@ -1,6 +1,7 @@
 """ Settings to be used by tests
 """
 import os
+import logging
 
 DEBUG = True
 
@@ -10,13 +11,14 @@ DATABASES = {
         'NAME': 'mydatabase'
     }
 }
-
+ALLOWED_HOSTS=['testserver',]
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.admin',
     'django_auth_policy',
+    'test_without_migrations',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -44,9 +46,32 @@ MEDIA_URL = '/media/'
 SECRET_KEY = 'Mah2eil9uiMeiYiePum2ich4ZaeL4pahNguoBeGhoo6jeeneeZ'
 
 # Use test templates
-TEMPLATE_DIRS = (
-    os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates'),
-)
+TEMPLATES=[
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [ os.path.join(os.path.abspath(os.path.dirname(__file__)),'templates')],
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.request',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.contrib.messages.context_processors.messages',
+             ],
+             #'loaders': [
+             #    ('django.template.loaders.cached.Loader', [
+             #        'django.template.loaders.filesystem.Loader',
+             #    ]),
+             #]
+        },
+    },                 
+]
+#TEMPLATE_DIRS = (
+#    os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates'),
+#)
 
 # Enabled Django Auth Policies
 AUTHENTICATION_POLICIES = (
@@ -84,7 +109,7 @@ LOGGING = {
     'handlers': {
         'null': {
             'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
+            'class': 'logging.NullHandler',
         },
         # This handler is used to buffer log messages and unittest their content
         'testing': {

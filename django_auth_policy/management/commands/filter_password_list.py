@@ -16,7 +16,7 @@ class Command(BaseCommand):
             return
 
         for arg in args:
-            fh = open(arg, 'r')
+            fh = open(arg, 'rb')  #open it in binary mode and handle decoding separately.
             for pw in fh:
                 try:
                     pw = pw.decode('utf8')
@@ -30,6 +30,6 @@ class Command(BaseCommand):
                 except ValidationError:
                     continue
 
-                print pw.encode('utf8')
+                print(pw.encode('utf8'))
 
             fh.close()

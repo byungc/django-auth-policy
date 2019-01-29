@@ -3,7 +3,7 @@ import logging
 from django import forms
 from django import template
 from django import http
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -91,14 +91,13 @@ class StrictUserAdmin(UserAdmin):
 
     def get_urls(self):
         urls = super(StrictUserAdmin, self).get_urls()
-        my_urls = patterns(
-            '',
+        my_urls = [
             url(r'^password/$',
                 self.admin_site.admin_view(self.set_temporary_password),
                 name='set_temporary_password'),
             url(r'^(\d+)/password/$',
                 self.admin_site.admin_view(self.user_change_password))
-        )
+        ]
         return my_urls + urls
 
     def temporary_password_action(self, request, queryset):

@@ -1,0 +1,6 @@
+eclipse.preferences.version=1
+encoding//django_auth_policy/migrations/0001_initial.py=utf-8
+encoding//django_auth_policy/migrations/0002_users_nullable.py=utf-8
+encoding//django_auth_policy/migrations/0003_auto_20150410_0408.py=utf-8
+encoding//django_auth_policy/migrations/0004_auto_20150422_0538.py=utf-8
+encoding//testsite/tests.py=utf-8

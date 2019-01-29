@@ -44,7 +44,7 @@ class PasswordStrengthPolicyHandler(object):
         this password.
         Policies will raise a ValidationError when the password doesn't comply
         """
-        for pol in self._policies.values():
+        for pol in list(self._policies.values()):
             pol.validate(password, user)
 
 
@@ -78,7 +78,7 @@ class PasswordChangePolicyHandler(object):
         except IndexError:
             last_pw_change = None
 
-        for pol in self._policies.values():
+        for pol in list(self._policies.values()):
             pol.validate(last_pw_change)
 
     def update_session(self, request, user):
@@ -91,11 +91,11 @@ class PasswordChangePolicyHandler(object):
             self.validate(user)
         except ValidationError as exc:
             if request.session.get('password_change_enforce') != exc.code:
-                logger.info(u'User %s must change password; %s',
+                logger.info('User %s must change password; %s',
                             user, exc.code)
             request.session['password_change_enforce'] = exc.code
             request.session['password_change_enforce_msg'] = \
-                unicode(exc.message)
+                str(exc.message)
         else:
             request.session['password_change_enforce'] = False
             request.session['password_change_enforce_msg'] = None
@@ -146,7 +146,7 @@ class AuthenticationPolicyHandler(object):
                 successful=False,
                 lockout=True)
 
-        for pol in self._policies.values():
+        for pol in list(self._policies.values()):
             pol.pre_auth_check(attempt, password)
 
         return attempt
@@ -159,7 +159,7 @@ class AuthenticationPolicyHandler(object):
         """
         assert attempt.user is not None
 
-        for pol in self._policies.values():
+        for pol in list(self._policies.values()):
             pol.post_auth_check(attempt)
 
         return attempt
@@ -168,7 +168,7 @@ class AuthenticationPolicyHandler(object):
         """ Run this when authentication was successful, i.e. after
         `post_auth_checks`.
         """
-        logger.info(u'Authentication success, username=%s, address=%s',
+        logger.info('Authentication success, username=%s, address=%s',
                     attempt.username, attempt.source_address)
 
         with transaction.atomic():
@@ -176,7 +176,7 @@ class AuthenticationPolicyHandler(object):
             attempt.lockout = False
             attempt.save()
 
-        for pol in self._policies.values():
+        for pol in list(self._policies.values()):
             pol.auth_success(attempt)
 
         return attempt

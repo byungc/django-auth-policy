@@ -39,7 +39,7 @@ class LoginAttemptManager(models.Manager):
         if not selected_attempts:
             return 0
 
-        usernames, addresses = zip(*selected_attempts)
+        usernames, addresses = list(zip(*selected_attempts))
 
         return self.unlock(usernames=usernames, addresses=addresses)
 
@@ -80,7 +80,7 @@ class LoginAttempt(models.Model):
         super(LoginAttempt, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return u'{0} at {1} from {2}'.format(self.username,
+        return '{0} at {1} from {2}'.format(self.username,
                                              self.timestamp,
                                              self.source_address)
 
@@ -134,7 +134,7 @@ class PasswordChange(models.Model):
         super(PasswordChange, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return u'{0} at {1}'.format(self.user, self.timestamp)
+        return '{0} at {1}'.format(self.user, self.timestamp)
 
 
 class UserChange(models.Model):
@@ -169,5 +169,5 @@ class UserChange(models.Model):
         super(UserChange, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return u'{0} at {1} by {1}'.format(self.user, self.timestamp,
+        return '{0} at {1} by {1}'.format(self.user, self.timestamp,
                                            self.by_user)

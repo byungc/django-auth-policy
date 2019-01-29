@@ -8,4 +8,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         c = LoginAttempt.objects.filter(lockout=True).update(lockout=False)
-        print u'Unlocked {0} login attempts.'.format(c)
+        print('Unlocked {0} login attempts.'.format(c))

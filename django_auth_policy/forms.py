@@ -58,7 +58,7 @@ class StrictAuthenticationForm(forms.Form):
         if username and password:
             self.user_cache = authenticate(username=username, password=password)
             if self.user_cache is None:
-                logger.info(u'Authentication failure, username=%s, '
+                logger.info('Authentication failure, username=%s, '
                             'address=%s, invalid authentication.',
                             attempt.username, attempt.source_address)
                 raise forms.ValidationError(

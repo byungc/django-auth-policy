@@ -47,13 +47,13 @@ class AuthenticationBasicChecks(AuthenticationPolicy):
 
     def pre_auth_check(self, loginattempt, password):
         if not loginattempt.username:
-            logger.info(u'Authentication failure, address=%s, '
+            logger.info('Authentication failure, address=%s, '
                         'no username supplied.',
                         loginattempt.source_address)
             raise ValidationError(self.text, code='invalid_login')
 
         if not password:
-            logger.info(u'Authentication failure, username=%s, '
+            logger.info('Authentication failure, username=%s, '
                         'address=%s, no password supplied.',
                         loginattempt.username,
                         loginattempt.source_address)
@@ -61,13 +61,13 @@ class AuthenticationBasicChecks(AuthenticationPolicy):
 
     def post_auth_check(self, loginattempt):
         if loginattempt.user is None:
-            logger.info(u'Authentication failure, username=%s, '
+            logger.info('Authentication failure, username=%s, '
                         'address=%s, invalid authentication.',
                         loginattempt.username, loginattempt.source_address)
             raise ValidationError(self.text, code='invalid_login')
 
         if not loginattempt.user.is_active:
-            logger.info(u'Authentication failure, username=%s, '
+            logger.info('Authentication failure, username=%s, '
                         'address=%s, user inactive.',
                         loginattempt.username, loginattempt.source_address)
             raise ValidationError(self.text, code='inactive')
@@ -93,8 +93,8 @@ class AuthenticationDisableExpiredUsers(AuthenticationPolicy):
                                                   last_login__lt=expire_at)
 
         for user in expired:
-            logger.info(u'User %s disabled because last login was at %s',
-                        unicode(user), user.last_login)
+            logger.info('User %s disabled because last login was at %s',
+                        str(user), user.last_login)
             # Send signal to be used to alert admins
             signals.user_expired.send(sender=user, user=user)
 
@@ -104,15 +104,15 @@ class AuthenticationDisableExpiredUsers(AuthenticationPolicy):
 def _format_lockduration(seconds):
     duration = datetime.timedelta(seconds=seconds)
     if duration.days > 1:
-        return _(u'{days} days').format(days=duration.days)
+        return _('{days} days').format(days=duration.days)
     elif duration.days == 1:
-        return _(u'a day')
+        return _('a day')
     elif duration.seconds >= 120:
-        return _(u'{mins} minutes').format(mins=duration.seconds // 60)
+        return _('{mins} minutes').format(mins=duration.seconds // 60)
     elif duration.seconds >= 60:
-        return _(u'a minute')
+        return _('a minute')
     else:
-        return _(u'{secs} seconds').format(secs=duration.seconds)
+        return _('{secs} seconds').format(secs=duration.seconds)
 
 
 class AuthenticationLockedUsername(AuthenticationPolicy):
@@ -127,7 +127,7 @@ class AuthenticationLockedUsername(AuthenticationPolicy):
     # Lockout duration in seconds
     lockout_duration = 60 * 10
     # Validation error
-    text = _(u'Too many failed login attempts. Your account has been locked '
+    text = _('Too many failed login attempts. Your account has been locked '
              'for {duration}.')
 
     assert period is None or period > lockout_duration, \
@@ -169,7 +169,7 @@ class AuthenticationLockedUsername(AuthenticationPolicy):
                 exclude_id=loginattempt.pk)
 
         if locked:
-            logger.info(u'Authentication failure, username=%s, address=%s, '
+            logger.info('Authentication failure, username=%s, address=%s, '
                         'username locked', loginattempt.username,
                         loginattempt.source_address)
             raise ValidationError(self.validation_msg,
@@ -197,7 +197,7 @@ class AuthenticationLockedRemoteAddress(AuthenticationPolicy):
     # Lockout duration in seconds
     lockout_duration = 60 * 10
     # Validation error
-    text = _(u'Too many failed login attempts. Your account has been locked '
+    text = _('Too many failed login attempts. Your account has been locked '
              'for {duration}.')
 
     assert period is None or period > lockout_duration, \
@@ -240,7 +240,7 @@ class AuthenticationLockedRemoteAddress(AuthenticationPolicy):
         locked = self.is_locked(loginattempt.source_address,
                 exclude_id=loginattempt.pk)
         if locked:
-            logger.info(u'Authentication failure, username=%s, address=%s, '
+            logger.info('Authentication failure, username=%s, address=%s, '
                         'address locked',
                         loginattempt.username,
                         loginattempt.source_address)
@@ -265,7 +265,7 @@ class AuthenticationUsernameWhitelist(AuthenticationPolicy):
     # Regexes
     whitelist = []
     _whitelist_regex = []
-    text = _(u"Please enter a correct username and password. "
+    text = _("Please enter a correct username and password. "
              "Note that both fields may be case-sensitive.")
 
     def pre_auth_check(self, loginattempt, password):
@@ -275,10 +275,10 @@ class AuthenticationUsernameWhitelist(AuthenticationPolicy):
 
         for regex in self._whitelist_regex:
             if regex.search(loginattempt.username):
-                logger.debug(u'Username matched whitelisted pattern %s',
+                logger.debug('Username matched whitelisted pattern %s',
                              regex.pattern)
                 return
 
-        logger.info(u'Authentication failure, username %s did not match '
+        logger.info('Authentication failure, username %s did not match '
                     'whitelisted pattern(s)', loginattempt.username)
         raise ValidationError(self.text, code='invalid_login')

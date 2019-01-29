@@ -11,7 +11,7 @@ from django_auth_policy.models import PasswordChange
 
 def _normalize_unicode(value):
     try:
-        value = unicodedata.normalize('NFKD', unicode(value))
+        value = unicodedata.normalize('NFKD', str(value))
         return value.encode('ascii', 'ignore').strip().lower()
     except UnicodeDecodeError:
         return value
@@ -142,7 +142,7 @@ class PasswordUserAttrs(PasswordStrengthPolicy):
     text = _('Passwords are not allowed to contain (pieces of) your name '
              'or email.')
 
-    _non_alphanum = re.compile(r'[^a-z0-9]')
+    _non_alphanum = re.compile(br'[^a-z0-9]')
 
     def validate(self, value, user=None):
         if user is None:
@@ -188,15 +188,15 @@ class PasswordDisallowedTerms(PasswordStrengthPolicy):
         found = []
         for term in self.terms:
             if term in simple_pass:
-                found.append(term)
+                found.append(term.decode("utf-8"))
 
         if found:
-            msg = self.text.format(terms=u', '.join(found))
+            msg = self.text.format(terms=', '.join(found))
             raise ValidationError(msg, 'password_disallowed_terms')
 
     @property
     def policy_text(self):
-        return self.text.format(terms=u', '.join(self.terms))
+        return self.text.format(terms=', '.join([x.decode('utf-8') for x in self.terms]))
 
 
 class PasswordLimitReuse(PasswordStrengthPolicy):

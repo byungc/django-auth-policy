@@ -1,24 +1,25 @@
-from django.conf.urls import patterns, url, include
+from django.conf.urls import url, include
 from django.contrib import admin
-
+from django.contrib import auth
 from django_auth_policy.forms import (StrictAuthenticationForm,
                                       StrictPasswordChangeForm)
 
+from testsite import views
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^login/$', 'testsite.views.login', name='login',
-        kwargs={'authentication_form': StrictAuthenticationForm,
-                'template_name': 'login.html'}),
-    url(r'^logout/$', 'django.contrib.auth.views.logout_then_login',
+    url(r'^login/$', views.login, name='login'),
+#        kwargs={'authentication_form': StrictAuthenticationForm,
+#                'template_name': 'login.html'}),
+    url(r'^logout/$', auth.views.logout_then_login,
         name='logout'),
-    url(r'^password_change/$', 'django.contrib.auth.views.password_change',
+    url(r'^password_change/$', views.password_change_view,
         name='password_change',
         kwargs={'password_change_form': StrictPasswordChangeForm,
                 'template_name': 'change_password.html',
                 'post_change_redirect': '/',
                 }),
-    url(r'^$', 'testsite.views.login_required_view', name='login_required_view'),
-    url(r'^signup/$', 'testsite.views.login_not_required_view', name='login_not_required_view'),
-    url(r'^another/$', 'testsite.views.another_view', name='another_view'),
-)
+    url(r'^$', views.login_required_view, name='login_required_view'),
+    url(r'^signup/$', views.login_not_required_view, name='login_not_required_view'),
+    url(r'^another/$', views.another_view, name='another_view'),
+]
